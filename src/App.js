@@ -1,3 +1,4 @@
+```javascript
 import React, { useState, useEffect } from 'react';
 import { ShoppingBag, X, Menu, ArrowRight, ChevronRight, CheckCircle2, Globe, CreditCard, Bitcoin, Wallet, LayoutDashboard, Package, Settings, Copy } from 'lucide-react';
 
@@ -26,3 +27,5 @@ export default function App() {
     </div>
   );
 }
+
+```
