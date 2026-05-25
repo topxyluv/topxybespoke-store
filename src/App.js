@@ -96,5 +96,3 @@ const HistoryView = () => {
 };
 
 export default App;
-
-```
