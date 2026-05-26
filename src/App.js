@@ -1,98 +1,74 @@
-```react
-import React, { useState, useEffect, createContext, useContext } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, doc, setDoc, onSnapshot, collection, deleteDoc, addDoc, getDocs } from 'firebase/firestore';
-import { ShoppingCart, Package, Trash2, Plus, Minus, ArrowLeft, History, CreditCard } from 'lucide-react';
+```javascript
+import React, { useState, useEffect } from 'react';
+import { ShoppingBag, X, Menu, ArrowRight, ChevronRight, CheckCircle2, Globe, CreditCard, Bitcoin, Wallet, LayoutDashboard, Package, Settings, Copy } from 'lucide-react';
 
-const firebaseConfig = JSON.parse(__firebase_config);
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+// --- MOCK DATA ---
+const INITIAL_PRODUCTS = [
+  { id: 1, name: 'Ivory Textured Zip Polo', priceNGN: 45000, image: 'https://images.unsplash.com/photo-1598032895397-b9472444bf93?auto=format&fit=crop&w=800&q=80', category: 'Tops', stock: 15, description: 'Minimalist luxury.' },
+  { id: 2, name: 'Earth-Tone Jacquard Shirt', priceNGN: 52000, image: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ce3?auto=format&fit=crop&w=800&q=80', category: 'Tops', stock: 8, description: 'Earth tones.' },
+  { id: 3, name: 'Cobalt Ribbed Polo', priceNGN: 48000, image: 'https://images.unsplash.com/photo-1588359348347-9bc6cbb6826a?auto=format&fit=crop&w=800&q=80', category: 'Tops', stock: 20, description: 'Royal sophistication.' },
+  { id: 4, name: 'Signature Monogram Co-ord Set', priceNGN: 135000, image: 'https://images.unsplash.com/photo-1593030736224-ca44b70db65a?auto=format&fit=crop&w=800&q=80', category: 'Sets', stock: 4, description: 'The Ultimate Power Suit.' }
+];
 
-const CartContext = createContext();
+const EXCHANGE_RATE = 1450; // NGN to USD
+const BTC_RATE = 65000;
 
-const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState({});
-  const [user, setUser] = useState(null);
+export default function App() {
+  const [currency, setCurrency] = useState('NGN');
+  const [view, setView] = useState('home');
+  const [cart, setCart] = useState([]);
 
-  useEffect(() => {
-    signInAnonymously(auth);
-    const unsubscribe = onAuthStateChanged(auth, setUser);
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (!user) return;
-    const cartRef = collection(db, 'artifacts', appId, 'users', user.uid, 'cart');
-    return onSnapshot(cartRef, (snapshot) => {
-      const items = {};
-      snapshot.forEach(doc => items[doc.id] = doc.data());
-      setCart(items);
-    });
-  }, [user]);
-
-  const updateCartItem = async (product, qtyChange) => {
-    if (!user) return;
-    const itemRef = doc(db, 'artifacts', appId, 'users', user.uid, 'cart', product.id);
-    const newQty = (cart[product.id]?.quantity || 0) + qtyChange;
-    if (newQty <= 0) await deleteDoc(itemRef);
-    else await setDoc(itemRef, { ...product, quantity: newQty });
+  const formatPrice = (priceNGN) => {
+    if (currency === 'NGN') return `₦${priceNGN.toLocaleString()}`;
+    if (currency === 'USD') return `$${(priceNGN / EXCHANGE_RATE).toFixed(2)}`;
+    return `${(priceNGN / BTC_RATE).toFixed(4)} BTC`;
   };
 
-  const checkout = async () => {
-    if (!user) return;
-    const orderRef = collection(db, 'artifacts', appId, 'users', user.uid, 'orders');
-    await addDoc(orderRef, { items: Object.values(cart), date: new Date().toISOString(), total: Object.values(cart).reduce((sum, i) => sum + (i.price * i.quantity), 0) });
-    // Clear cart
-    const cartRef = collection(db, 'artifacts', appId, 'users', user.uid, 'cart');
-    const snapshot = await getDocs(cartRef);
-    snapshot.forEach(doc => deleteDoc(doc.ref));
-  };
-
-  return <CartContext.Provider value={{ cart, updateCartItem, checkout, user }}>{children}</CartContext.Provider>;
-};
-
-const App = () => {
-  const [view, setView] = useState({ page: 'home' });
   return (
-    <CartProvider>
-      <div className="max-w-md mx-auto p-4 bg-gray-50 min-h-screen">
-        <nav className="flex justify-between mb-6 bg-white p-4 rounded-xl shadow-sm">
-          <h1 className="font-bold cursor-pointer" onClick={() => setView({ page: 'home' })}>MyStore</h1>
-          <div className="flex gap-4">
-            <History size={20} onClick={() => setView({ page: 'history' })} className="cursor-pointer" />
-            <ShoppingCart size={20} onClick={() => setView({ page: 'cart' })} className="cursor-pointer" />
+    <div className="min-h-screen bg-white text-gray-900 font-sans selection:bg-black selection:text-white">
+      {/* Navigation */}
+      <nav className="sticky top-0 bg-white/80 backdrop-blur-md p-6 border-b border-gray-100 flex justify-between items-center z-50">
+        <h1 className="font-serif font-bold text-xl cursor-pointer" onClick={() => setView('home')}>TOPXYBESPOKE</h1>
+        <div className="flex gap-6 items-center">
+          <select className="text-xs uppercase bg-transparent outline-none cursor-pointer" onChange={(e) => setCurrency(e.target.value)}>
+            <option value="NGN">NGN</option>
+            <option value="USD">USD</option>
+            <option value="BTC">BTC</option>
+          </select>
+          <button onClick={() => setView('cart')} className="relative"><ShoppingBag size={20} /></button>
+          <Menu size={20} className="md:hidden" />
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-6 py-12">
+        {view === 'home' && (
+          <div className="space-y-24">
+            <section className="text-center py-20">
+              <h2 className="text-6xl md:text-8xl font-serif mb-6 leading-tight">Artisan<br/>Tailoring.</h2>
+              <p className="text-gray-500 max-w-sm mx-auto mb-10">Crafted for the modern individual who values precision, texture, and silence.</p>
+              <button onClick={() => setView('shop')} className="bg-black text-white px-10 py-4 rounded-full flex items-center gap-2 mx-auto hover:scale-105 transition-all">
+                Shop Collection <ArrowRight size={18} />
+              </button>
+            </section>
+
+            <section>
+              <h3 className="text-2xl font-serif mb-12">Featured Pieces</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {INITIAL_PRODUCTS.map(p => (
+                  <div key={p.id} className="group cursor-pointer">
+                    <img src={p.image} alt={p.name} className="w-full aspect-[3/4] object-cover mb-4 rounded-sm" />
+                    <h4 className="font-semibold">{p.name}</h4>
+                    <p className="text-gray-500">{formatPrice(p.priceNGN)}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
           </div>
-        </nav>
-        {view.page === 'home' && <div className="grid gap-4">{[{id:'1', name:'Coffee', price:15}, {id:'2', name:'Mug', price:10}].map(p => <div key={p.id} className="bg-white p-4 rounded-lg flex justify-between">{p.name} <button className="bg-blue-500 text-white px-2 py-1 rounded" onClick={() => {}}>Add</button></div>)}</div>}
-        {view.page === 'cart' && <Cart onBack={() => setView({ page: 'home' })} />}
-        {view.page === 'history' && <HistoryView />}
-      </div>
-    </CartProvider>
-  );
-};
-
-const Cart = ({ onBack }) => {
-  const { cart, checkout } = useContext(CartContext);
-  return (
-    <div className="bg-white p-6 rounded-lg">
-      <h2 className="text-xl font-bold mb-4">Cart</h2>
-      {Object.values(cart).map(i => <div key={i.id}>{i.name} x {i.quantity}</div>)}
-      <button className="w-full bg-green-500 text-white py-2 mt-4 rounded" onClick={checkout}>Checkout</button>
+        )}
+      </main>
     </div>
   );
-};
+}
 
-const HistoryView = () => {
-    const [orders, setOrders] = useState([]);
-    const { user } = useContext(CartContext);
-    useEffect(() => {
-        if(!user) return;
-        getDocs(collection(db, 'artifacts', appId, 'users', user.uid, 'orders')).then(s => setOrders(s.docs.map(d => d.data())));
-    }, [user]);
-    return <div className="bg-white p-4 rounded-lg">{orders.map((o, i) => <div key={i} className="mb-2 border-b">Order: ${o.total}</div>)}</div>;
-};
-
-export default App;
+```
