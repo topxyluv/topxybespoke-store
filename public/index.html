@@ -8,74 +8,78 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <title>TOPXYBESPOKE</title>
+    <title>TOPXYBESPOKE | Command Center</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="text/babel">
       const { useState } = React;
-      
-      const PRODUCTS = [
-        { id: 1, name: 'Ivory Textured Zip Polo', priceNGN: 45000, category: 'Tops', image: 'https://images.unsplash.com/photo-1598032895397-b9472444bf93?auto=format&fit=crop&w=800&q=80' },
-        { id: 2, name: 'Earth-Tone Jacquard Shirt', priceNGN: 52000, category: 'Tops', image: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ce3?auto=format&fit=crop&w=800&q=80' },
-        { id: 3, name: 'Signature Monogram Co-ord Set', priceNGN: 135000, category: 'Sets', image: 'https://images.unsplash.com/photo-1593030736224-ca44b70db65a?auto=format&fit=crop&w=800&q=80' }
+
+      const initialProjects = [
+        { id: 'T-001', client: 'A. Okoro', garment: 'Custom Tuxedo', status: 'In Production', priority: 'Red', notes: 'Prefers slim fit, Italian wool.' },
+        { id: 'T-002', client: 'B. Adeyemi', garment: 'Jacquard Shirt', status: 'Fabric Selection', priority: 'Green', notes: 'Anniversary in Nov.' }
       ];
 
       function App() {
-        const [currency, setCurrency] = useState('NGN');
-        const [view, setView] = useState('home');
-        const [isAdmin, setIsAdmin] = useState(false);
+        const [projects, setProjects] = useState(initialProjects);
+        const [isAdmin, setIsAdmin] = useState(true); // Defaulted to true for your workspace
 
-        const formatPrice = (n) => {
-          if (currency === 'BTC') return `${(n / 65000000).toFixed(6)} BTC`;
-          return new Intl.NumberFormat('en-NG', { style: 'currency', currency: currency === 'USD' ? 'USD' : 'NGN' }).format(currency === 'USD' ? n / 1450 : n);
-        };
+        const getStatusColor = (p) => p === 'Red' ? 'bg-red-500' : p === 'Amber' ? 'bg-amber-500' : 'bg-green-500';
 
         return (
-          <div className="min-h-screen bg-white text-gray-900 font-sans selection:bg-black selection:text-white">
-            <nav className="sticky top-0 bg-white/90 backdrop-blur-md p-6 border-b flex justify-between items-center z-50">
-              <h1 className="font-serif font-bold text-xl cursor-pointer" onClick={() => setView('home')}>TOPXYBESPOKE</h1>
-              <div className="flex gap-6 items-center uppercase text-xs tracking-widest">
-                <select onChange={(e) => setCurrency(e.target.value)} className="bg-transparent outline-none cursor-pointer">
-                  <option value="NGN">NGN</option>
-                  <option value="USD">USD</option>
-                  <option value="BTC">BTC</option>
-                </select>
-                <button onClick={() => setIsAdmin(!isAdmin)} className="font-bold">{isAdmin ? 'SHOP' : 'ADMIN'}</button>
+          <div className="min-h-screen bg-neutral-50 text-gray-900 font-sans">
+            <nav className="bg-white p-6 border-b flex justify-between items-center sticky top-0 z-50">
+              <h1 className="font-serif font-bold text-xl">TOPXYBESPOKE</h1>
+              <div className="flex gap-4 items-center">
+                <span className="text-[10px] uppercase tracking-widest font-bold">Admin: Master Tailor</span>
+                <button onClick={() => setIsAdmin(!isAdmin)} className="border px-4 py-2 text-[10px] uppercase tracking-widest">Logout</button>
               </div>
             </nav>
 
-            <main className="max-w-7xl mx-auto px-6 py-12">
-              {isAdmin ? (
-                <div className="space-y-6">
-                  <h2 className="text-2xl font-serif">Staff Platform</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="p-8 border border-gray-200">Orders Dashboard</div>
-                    <div className="p-8 border border-gray-200">Inventory Management</div>
-                    <div className="p-8 border border-gray-200">Bespoke Requests</div>
+            <main className="max-w-[1600px] mx-auto p-8 grid grid-cols-12 gap-8">
+              {/* Sidebar */}
+              <aside className="col-span-2 space-y-8">
+                <div>
+                  <h4 className="text-[10px] uppercase text-gray-400 mb-4">Operations</h4>
+                  <div className="space-y-2">
+                    {['Pipeline', 'Staff IDs', 'Client Dossiers'].map(item => (
+                      <button key={item} className="block w-full text-left py-2 font-bold">{item}</button>
+                    ))}
                   </div>
                 </div>
-              ) : view === 'home' ? (
-                <div className="text-center py-20 space-y-8">
-                  <h2 className="text-6xl md:text-8xl font-serif leading-tight">Artisan<br/>Tailoring.</h2>
-                  <button onClick={() => setView('shop')} className="bg-black text-white px-10 py-4 rounded-full uppercase text-xs tracking-widest hover:bg-neutral-800 transition">Explore Collection</button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                  {PRODUCTS.map(p => (
-                    <div key={p.id} className="group cursor-pointer">
-                      <img src={p.image} alt={p.name} className="w-full aspect-[3/4] object-cover mb-4" />
-                      <h4 className="font-semibold">{p.name}</h4>
-                      <p className="text-gray-500 text-sm">{formatPrice(p.priceNGN)}</p>
+              </aside>
+
+              {/* Command Center */}
+              <section className="col-span-7 space-y-6">
+                <h3 className="font-serif text-2xl">Bespoke Pipeline</h3>
+                <div className="bg-white border border-gray-200 shadow-sm">
+                  {projects.map(p => (
+                    <div key={p.id} className="grid grid-cols-5 items-center p-6 border-b last:border-b-0 hover:bg-neutral-50 transition">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full ${getStatusColor(p.priority)}`}></div>
+                        <span className="font-bold">{p.id}</span>
+                      </div>
+                      <span className="text-sm">{p.client}</span>
+                      <span className="text-sm text-gray-500">{p.garment}</span>
+                      <span className="text-[10px] uppercase tracking-widest bg-gray-100 px-2 py-1">{p.status}</span>
+                      <button className="text-[10px] uppercase underline text-gray-400 hover:text-black">Update Stage</button>
                     </div>
                   ))}
                 </div>
-              )}
+              </section>
+
+              {/* Quick Actions & Dossiers */}
+              <section className="col-span-3 space-y-6">
+                <h3 className="font-serif text-2xl">Client Dossier</h3>
+                <div className="bg-white p-6 border border-gray-200">
+                  <p className="text-sm text-gray-600 italic">"Focus on the Signature Monogram Co-ord. VIP Client. Ensure impeccable finish on the collar stitching."</p>
+                  <button className="mt-6 w-full bg-black text-white py-3 text-[10px] uppercase tracking-widest">Add Client Note</button>
+                </div>
+              </section>
             </main>
           </div>
         );
       }
-
       const root = ReactDOM.createRoot(document.getElementById('root'));
       root.render(<App />);
     </script>
