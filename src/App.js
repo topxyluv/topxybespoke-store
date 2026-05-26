@@ -12,16 +12,18 @@ function App() {
   const [view, setView] = useState('home');
 
   const formatPrice = (n) => {
-    if (currency === 'USD') return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n / 1450);
-    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(n);
+    return new Intl.NumberFormat('en-NG', { 
+      style: 'currency', 
+      currency: currency === 'USD' ? 'USD' : 'NGN' 
+    }).format(currency === 'USD' ? n / 1450 : n);
   };
 
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans">
-      <nav className="sticky top-0 bg-white p-6 border-b flex justify-between items-center z-50">
+      <nav className="p-6 border-b flex justify-between items-center">
         <h1 className="font-serif font-bold text-xl cursor-pointer" onClick={() => setView('home')}>TOPXYBESPOKE</h1>
-        <div className="flex gap-4 items-center">
-          <select onChange={(e) => setCurrency(e.target.value)} className="text-xs uppercase bg-transparent outline-none">
+        <div className="flex gap-4">
+          <select onChange={(e) => setCurrency(e.target.value)} className="outline-none bg-transparent">
             <option value="NGN">NGN</option>
             <option value="USD">USD</option>
           </select>
@@ -31,16 +33,15 @@ function App() {
       <main className="max-w-7xl mx-auto px-6 py-12">
         {view === 'home' ? (
           <div className="text-center py-20">
-            <h2 className="text-6xl font-serif mb-6 leading-tight">Artisan<br/>Tailoring.</h2>
-            <button onClick={() => setView('shop')} className="bg-black text-white px-10 py-4 rounded-full flex items-center gap-2 mx-auto">Shop Collection <ArrowRight size={18} /></button>
+            <h2 className="text-6xl font-serif mb-6">Artisan Tailoring.</h2>
+            <button onClick={() => setView('shop')} className="bg-black text-white px-10 py-4 rounded-full">Shop Collection</button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-2 gap-8">
             {INITIAL_PRODUCTS.map(p => (
               <div key={p.id} className="border p-4">
-                <img src={p.image} alt={p.name} className="w-full aspect-square object-cover mb-4" />
                 <h4 className="font-bold">{p.name}</h4>
-                <p className="text-gray-500">{formatPrice(p.priceNGN)}</p>
+                <p>{formatPrice(p.priceNGN)}</p>
               </div>
             ))}
           </div>
