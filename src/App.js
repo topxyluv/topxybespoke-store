@@ -7,7 +7,7 @@ const INITIAL_PRODUCTS = [
   { id: 2, name: 'Earth-Tone Jacquard Shirt', priceNGN: 52000, image: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ce3?auto=format&fit=crop&w=800&q=80' }
 ];
 
-export default function App() {
+function App() {
   const [currency, setCurrency] = useState('NGN');
   const [view, setView] = useState('home');
 
@@ -49,5 +49,7 @@ export default function App() {
     </div>
   );
 }
+
+export default App;
 
 ```
